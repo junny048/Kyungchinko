@@ -7,47 +7,45 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <header class="topbar">
+  <header>
     <h1>Kyungchinko</h1>
-    <div class="wallet">포인트: <span id="wallet-balance">-</span>P</div>
+    <div>포인트: <b id="balance">-</b>P</div>
   </header>
 
-  <main class="grid">
-    <section class="card auth">
-      <h2>계정</h2>
+  <main>
+    <section class="card">
+      <h2>인증</h2>
+      <input id="email" placeholder="email" />
+      <input id="password" type="password" placeholder="password(8+)" />
       <div class="row">
-        <input id="email" placeholder="email" />
-        <input id="password" type="password" placeholder="password(8+)" />
+        <button id="signup">회원가입</button>
+        <button id="login">로그인</button>
+        <button id="logout">로그아웃</button>
       </div>
-      <div class="row">
-        <button id="btn-signup">회원가입</button>
-        <button id="btn-login">로그인</button>
-        <button id="btn-logout">로그아웃</button>
-      </div>
-      <p id="auth-status" class="muted"></p>
+      <p id="status"></p>
     </section>
 
-    <section class="card shop">
-      <h2>포인트 상점</h2>
-      <div id="packages" class="list"></div>
+    <section class="card">
+      <h2>충전</h2>
+      <div id="packages"></div>
     </section>
 
-    <section class="card machines">
+    <section class="card">
       <h2>머신</h2>
-      <div id="machines" class="list"></div>
+      <div id="machines"></div>
     </section>
 
-    <section class="card result">
-      <h2>최근 스핀 결과</h2>
-      <pre id="spin-result">아직 없음</pre>
+    <section class="card">
+      <h2>스핀 결과</h2>
+      <pre id="result">없음</pre>
     </section>
 
-    <section class="card inventory">
+    <section class="card">
       <h2>인벤토리</h2>
-      <div id="inventory" class="list"></div>
+      <div id="inventory"></div>
     </section>
 
-    <section class="card logs">
+    <section class="card">
       <h2>로그</h2>
       <pre id="logs"></pre>
     </section>
