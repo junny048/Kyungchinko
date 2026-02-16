@@ -5,14 +5,15 @@ export default async function MachineDetail({ params }: { params: Promise<{ id: 
   return (
     <section className="panel">
       <h2>Machine {id}</h2>
-      <p>È®·üÇ¥ ¹× º¸»óÇ®Àº API `/api/machines/:id` ÀÀ´äÀ¸·Î ·»´õ¸µÇÏµµ·Ï È®Àå °¡´ÉÇÕ´Ï´Ù.</p>
+      <p>í™•ë¥ í‘œ ë° ë³´ìƒí’€ì€ API `/api/machines/:id` ì‘ë‹µìœ¼ë¡œ ë Œë”ë§í•˜ë„ë¡ í™•ì¥ ê°€ëŠ¥í•©ë‹ˆë‹¤.</p>
       <div style={{ display: "flex", gap: 12 }}>
-        <button>Æ÷ÀÎÆ®·Î ½ºÇÉ</button>
-        <button style={{ background: "var(--accent-2)", color: "#111" }}>Æ¼ÄÏÀ¸·Î ½ºÇÉ</button>
+        <button>í¬ì¸íŠ¸ë¡œ ìŠ¤í•€</button>
+        <button style={{ background: "var(--accent-2)", color: "#111" }}>í‹°ì¼“ìœ¼ë¡œ ìŠ¤í•€</button>
       </div>
       <p style={{ marginTop: 12 }}>
-        <Link href="/play/new">ÃÖ±Ù ½ºÇÉ ¿¬Ãâ º¸±â</Link>
+        <Link href="/play/new">ìµœê·¼ ìŠ¤í•€ ì—°ì¶œ ë³´ê¸°</Link>
       </p>
     </section>
   );
 }
+

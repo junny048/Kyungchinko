@@ -2,7 +2,8 @@ export default function AdminRewardsPage() {
   return (
     <section className="panel">
       <h2>Admin / Rewards</h2>
-      <p>º¸»ó Ä«Å»·Î±× CRUD È­¸é ÀÚ¸®.</p>
+      <p>ë³´ìƒ ì¹´íƒˆë¡œê·¸ CRUD í™”ë©´ ìë¦¬.</p>
     </section>
   );
 }
+

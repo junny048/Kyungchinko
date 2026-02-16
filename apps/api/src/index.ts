@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+﻿import Fastify from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
@@ -27,7 +27,7 @@ app.decorate("authenticate", async (request, reply) => {
       onlyCookie: false,
     });
     if (payload.type !== "access") return reply.code(401).send({ message: "Invalid token type" });
-    request.user = payload;
+    request.authUser = payload;
   } catch {
     return reply.code(401).send({ message: "Unauthorized" });
   }
@@ -52,3 +52,5 @@ try {
 }
 
 await app.listen({ port: env.PORT, host: "0.0.0.0" });
+
+

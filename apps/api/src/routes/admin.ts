@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from "fastify";
+﻿import { FastifyPluginAsync } from "fastify";
 import { prisma } from "../prisma.js";
 import { z } from "zod";
 
@@ -13,7 +13,7 @@ const machineSchema = z.object({
 export const adminRoutes: FastifyPluginAsync = async (app) => {
   app.addHook("preHandler", app.authenticate);
   app.addHook("preHandler", async (request, reply) => {
-    if (!["ADMIN", "OP"].includes(request.user.role)) {
+    if (!["ADMIN", "OP"].includes(request.authUser.role)) {
       return reply.code(403).send({ message: "Forbidden" });
     }
   });
@@ -29,7 +29,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
     const machine = await prisma.machine.update({ where: { id }, data: body });
     await prisma.auditLog.create({
       data: {
-        actorUserId: request.user.sub,
+        actorUserId: request.authUser.sub,
         action: "UPDATE_MACHINE",
         targetType: "Machine",
         targetId: id,
@@ -69,7 +69,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
 
     await prisma.auditLog.create({
       data: {
-        actorUserId: request.user.sub,
+        actorUserId: request.authUser.sub,
         action: "CREATE_PROBABILITY_VERSION",
         targetType: "ProbabilityVersion",
         targetId: created.id,
@@ -105,7 +105,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
 
       await tx.auditLog.create({
         data: {
-          actorUserId: request.user.sub,
+          actorUserId: request.authUser.sub,
           action: "PUBLISH_PROBABILITY_VERSION",
           targetType: "ProbabilityVersion",
           targetId: id,
@@ -172,14 +172,14 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
           type: "ADJUST",
           amount: BigInt(body.amount),
           refType: "ADMIN",
-          refId: request.user.sub,
+          refId: request.authUser.sub,
           metaJson: { reason: body.reason },
         },
       });
 
       await tx.auditLog.create({
         data: {
-          actorUserId: request.user.sub,
+          actorUserId: request.authUser.sub,
           action: "ADJUST_POINTS",
           targetType: "User",
           targetId: userId,
@@ -191,3 +191,5 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
     return { ok: true };
   });
 };
+
+

@@ -1,8 +1,9 @@
 export default function HistoryPage() {
   return (
     <section className="panel">
-      <h2>³»¿ª</h2>
-      <p>°áÁ¦/½ºÇÉ/È¹µæ ·Î±×¸¦ Ä¿¼­ ±â¹ÝÀ¸·Î Á¶È¸ÇÕ´Ï´Ù.</p>
+      <h2>ë‚´ì—­</h2>
+      <p>ê²°ì œ/ìŠ¤í•€/íšë“ ë¡œê·¸ë¥¼ ì»¤ì„œ ê¸°ë°˜ìœ¼ë¡œ ì¡°íšŒí•©ë‹ˆë‹¤.</p>
     </section>
   );
 }
+

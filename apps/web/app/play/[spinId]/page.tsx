@@ -3,7 +3,8 @@ export default async function PlayPage({ params }: { params: Promise<{ spinId: s
   return (
     <section className="panel">
       <h2>Spin Result #{spinId}</h2>
-      <p>¼­¹ö °áÁ¤ °á°ú¸¦ ±â¹İÀ¸·Î Å¬¶óÀÌ¾ğÆ® ¿¬Ãâ¸¸ Àç»ıÇÏ´Â ¿µ¿ªÀÔ´Ï´Ù.</p>
+      <p>ì„œë²„ ê²°ì • ê²°ê³¼ë¥¼ ê¸°ë°˜ìœ¼ë¡œ í´ë¼ì´ì–¸íŠ¸ ì—°ì¶œë§Œ ì¬ìƒí•˜ëŠ” ì˜ì—­ì…ë‹ˆë‹¤.</p>
     </section>
   );
 }
+

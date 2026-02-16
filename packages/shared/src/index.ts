@@ -5,3 +5,4 @@ export type ApiResult<T> = {
 };
 
 export type RewardRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
+

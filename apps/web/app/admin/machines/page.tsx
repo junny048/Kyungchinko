@@ -2,7 +2,8 @@ export default function AdminMachinesPage() {
   return (
     <section className="panel">
       <h2>Admin / Machines</h2>
-      <p>¸Ó½Å CRUD + È®·ü ¹öÀü ¹ßÇà È­¸é ÀÚ¸®.</p>
+      <p>ë¨¸ì‹  CRUD + í™•ë¥  ë²„ì „ ë°œí–‰ í™”ë©´ ìë¦¬.</p>
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from "fastify";
+﻿import { FastifyPluginAsync } from "fastify";
 import { prisma } from "../prisma.js";
 import { weightedPick } from "../utils/weighted-pick.js";
 import { RewardRarity } from "@prisma/client";
@@ -60,7 +60,7 @@ export const machineRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post("/machines/:id/spin", { preHandler: [app.authenticate] }, async (request, reply) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const { id: machineId } = request.params as { id: string };
     const body = spinSchema.parse(request.body);
 
@@ -213,3 +213,5 @@ export const machineRoutes: FastifyPluginAsync = async (app) => {
     return spin;
   });
 };
+
+

@@ -1,8 +1,9 @@
 export default function InventoryPage() {
   return (
     <section className="panel">
-      <h2>ÀÎº¥Åä¸®</h2>
-      <p>Èñ±Íµµ/Å¸ÀÔ ÇÊÅÍ¿Í ÀåÂø API ¿¬°á ÁöÁ¡</p>
+      <h2>ì¸ë²¤í† ë¦¬</h2>
+      <p>í¬ê·€ë„/íƒ€ìž… í•„í„°ì™€ ìž¥ì°© API ì—°ê²° ì§€ì </p>
     </section>
   );
 }
+

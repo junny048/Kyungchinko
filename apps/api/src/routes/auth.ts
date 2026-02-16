@@ -89,3 +89,4 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     return { ok: true, message: "Password reset completed" };
   });
 };
+

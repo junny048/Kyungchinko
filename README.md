@@ -40,3 +40,4 @@
 ## Seed Accounts
 - `admin@example.com` / `password`
 - `user@example.com` / `password`
+

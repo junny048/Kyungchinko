@@ -14,3 +14,4 @@ export function weightedPick<T>(items: Array<{ item: T; weight: number }>): T {
 
   return items[items.length - 1]!.item;
 }
+

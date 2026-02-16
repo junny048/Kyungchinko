@@ -1,9 +1,10 @@
 export default function ShopPage() {
   return (
     <section className="panel">
-      <h2>Æ÷ÀÎÆ® »óÁ¡</h2>
-      <p>ÆĞÅ°Áö: 1,000 / 5,000(+10%) / 10,000(+15%)</p>
-      <small>PG Äİ¹éÀº `/api/payments/webhook/:provider`¿¡¼­ ¸èµî Ã³¸®µË´Ï´Ù.</small>
+      <h2>í¬ì¸íŠ¸ ìƒì </h2>
+      <p>íŒ¨í‚¤ì§€: 1,000 / 5,000(+10%) / 10,000(+15%)</p>
+      <small>PG ì½œë°±ì€ `/api/payments/webhook/:provider`ì—ì„œ ë©±ë“± ì²˜ë¦¬ë©ë‹ˆë‹¤.</small>
     </section>
   );
 }
+

@@ -6,10 +6,11 @@ declare module "fastify" {
   }
 
   interface FastifyRequest {
-    user: {
+    authUser: {
       sub: string;
       role: "USER" | "ADMIN" | "OP";
       email: string;
     };
   }
 }
+

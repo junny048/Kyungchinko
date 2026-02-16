@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from "fastify";
+﻿import { FastifyPluginAsync } from "fastify";
 import { prisma } from "../prisma.js";
 import { z } from "zod";
 
@@ -9,7 +9,7 @@ const equipSchema = z.object({
 
 export const inventoryRoutes: FastifyPluginAsync = async (app) => {
   app.get("/inventory", { preHandler: [app.authenticate] }, async (request) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const q = request.query as { rarity?: string; type?: string; cursor?: string };
 
     const items = await prisma.inventory.findMany({
@@ -33,7 +33,7 @@ export const inventoryRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post("/inventory/equip", { preHandler: [app.authenticate] }, async (request, reply) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const body = equipSchema.parse(request.body);
 
     const inventory = await prisma.inventory.findUnique({
@@ -53,7 +53,9 @@ export const inventoryRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.get("/profile/equip", { preHandler: [app.authenticate] }, async (request) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     return prisma.equip.findMany({ where: { userId }, include: { rewardCatalog: true } });
   });
 };
+
+

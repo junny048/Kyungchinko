@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from "fastify";
+﻿import { FastifyPluginAsync } from "fastify";
 import { prisma } from "../prisma.js";
 
 function dayKey(date = new Date()): string {
@@ -7,7 +7,7 @@ function dayKey(date = new Date()): string {
 
 export const eventRoutes: FastifyPluginAsync = async (app) => {
   app.post("/events/daily-checkin", { preHandler: [app.authenticate] }, async (request, reply) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const key = dayKey();
     const refId = `daily-checkin:${key}`;
 
@@ -39,7 +39,7 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.get("/events/status", { preHandler: [app.authenticate] }, async (request) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const key = dayKey();
     const refId = `daily-checkin:${key}`;
 
@@ -53,3 +53,5 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
     return { dailyCheckin: { date: key, checkedIn } };
   });
 };
+
+

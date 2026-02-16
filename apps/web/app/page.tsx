@@ -1,18 +1,18 @@
 import Link from "next/link";
 
 const machines = [
-  { id: "sample-1", name: "Starter Machine", cost: 100, note: "±ÕÇüÇü" },
-  { id: "sample-2", name: "Neon Burst", cost: 300, note: "°íÀ§Çè" },
-  { id: "sample-3", name: "Cherry Rush", cost: 150, note: "Æ¼ÄÏ ÃßÃµ" },
+  { id: "sample-1", name: "Starter Machine", cost: 100, note: "ê· í˜•í˜•" },
+  { id: "sample-2", name: "Neon Burst", cost: 300, note: "ê³ ìœ„í—˜" },
+  { id: "sample-3", name: "Cherry Rush", cost: 150, note: "í‹°ì¼“ ì¶”ì²œ" },
 ];
 
 export default function HomePage() {
   return (
     <section>
-      <h1>Æ÷ÀÎÆ® ±â¹İ ¿Â¶óÀÎ ºüÄ£ÄÚ</h1>
-      <p><small>Çö±İ/½Ç¹°/È¯Àü ¾ø´Â 100% µğÁöÅĞ °æÇ° ÇÃ·§Æû</small></p>
+      <h1>í¬ì¸íŠ¸ ê¸°ë°˜ ì˜¨ë¼ì¸ ë¹ ì¹œì½”</h1>
+      <p><small>í˜„ê¸ˆ/ì‹¤ë¬¼/í™˜ì „ ì—†ëŠ” 100% ë””ì§€í„¸ ê²½í’ˆ í”Œë«í¼</small></p>
       <div className="panel" style={{ margin: "16px 0" }}>
-        <b>ÀÜ¾×</b>
+        <b>ì”ì•¡</b>
         <p>Point: 0 / Ticket: 0</p>
       </div>
       <div className="grid">
@@ -27,3 +27,4 @@ export default function HomePage() {
     </section>
   );
 }
+

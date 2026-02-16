@@ -1,9 +1,9 @@
-import { FastifyPluginAsync } from "fastify";
+﻿import { FastifyPluginAsync } from "fastify";
 import { prisma } from "../prisma.js";
 
 export const walletRoutes: FastifyPluginAsync = async (app) => {
   app.get("/wallet", { preHandler: [app.authenticate] }, async (request) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const wallet = await prisma.wallet.findUnique({ where: { userId } });
     return {
       balancePoint: wallet?.balancePoint ?? BigInt(0),
@@ -12,7 +12,7 @@ export const walletRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.get("/ledger", { preHandler: [app.authenticate] }, async (request) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const cursor = (request.query as { cursor?: string }).cursor;
 
     const rows = await prisma.walletTransaction.findMany({
@@ -28,3 +28,5 @@ export const walletRoutes: FastifyPluginAsync = async (app) => {
     };
   });
 };
+
+

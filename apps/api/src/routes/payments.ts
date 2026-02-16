@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from "fastify";
+﻿import { FastifyPluginAsync } from "fastify";
 import { prisma } from "../prisma.js";
 import { env } from "../config.js";
 import { randomUUID } from "node:crypto";
@@ -16,7 +16,7 @@ export const paymentRoutes: FastifyPluginAsync = async (app) => {
   app.get("/shop/packages", async () => ({ packages }));
 
   app.post("/payments/create-order", { preHandler: [app.authenticate] }, async (request, reply) => {
-    const userId = request.user.sub;
+    const userId = request.authUser.sub;
     const body = createOrderSchema.parse(request.body);
 
     const pkg = packages.find((p) => p.id === body.packageId);
@@ -96,3 +96,5 @@ export const paymentRoutes: FastifyPluginAsync = async (app) => {
     return { ok: true };
   });
 };
+
+
