@@ -1,5 +1,8 @@
-﻿app.db
-__pycache__/
-*.pyc
-server.out.log
-server.err.log
+node_modules/
+.env
+.env.*
+!.env.example
+.next/
+dist/
+coverage/
+apps/api/prisma/dev.db

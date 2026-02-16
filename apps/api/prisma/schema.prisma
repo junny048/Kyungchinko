@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  OP
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum LedgerType {
+  CHARGE
+  SPEND
+  REWARD
+  ADJUST
+}
+
+enum RefType {
+  PAYMENT
+  SPIN
+  ADMIN
+  EVENT
+}
+
+enum PaymentProvider {
+  TOSS
+  IMPORT
+  ETC
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  CANCELED
+  REFUNDED
+}
+
+enum ProbabilityStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum RewardType {
+  COSMETIC
+  CURRENCY
+  ACCESS
+  TICKET
+}
+
+enum RewardRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  passwordHash    String
+  role            UserRole          @default(USER)
+  status          UserStatus        @default(ACTIVE)
+  limitsJson      Json?
+  selfBlockedUntil DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  wallet          Wallet?
+  ledger          WalletTransaction[]
+  payments        Payment[]
+  inventory       Inventory[]
+  spins           Spin[]
+  equips          Equip[]
+  auditLogs       AuditLog[]
+}
+
+model Wallet {
+  userId       String   @id
+  balancePoint BigInt   @default(0)
+  ticketBalance Int     @default(0)
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WalletTransaction {
+  id         String    @id @default(uuid())
+  userId     String
+  type       LedgerType
+  amount     BigInt
+  refType    RefType
+  refId      String
+  metaJson   Json?
+  createdAt  DateTime  @default(now())
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Payment {
+  id           String         @id @default(uuid())
+  userId       String
+  provider     PaymentProvider
+  orderId      String         @unique
+  amountKRW    Int
+  pointGranted BigInt
+  status       PaymentStatus  @default(CREATED)
+  rawJson      Json?
+  createdAt    DateTime       @default(now())
+  paidAt       DateTime?
+
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Machine {
+  id                           String               @id @default(uuid())
+  name                         String
+  themeKey                     String
+  costPerSpin                  Int
+  ticketAllowed                Boolean              @default(false)
+  isActive                     Boolean              @default(true)
+  currentProbabilityVersionId  String?
+  createdAt                    DateTime             @default(now())
+  updatedAt                    DateTime             @updatedAt
+
+  currentProbabilityVersion    ProbabilityVersion?  @relation("CurrentProbability", fields: [currentProbabilityVersionId], references: [id])
+  probabilityVersions          ProbabilityVersion[]
+  spins                        Spin[]
+}
+
+model ProbabilityVersion {
+  id             String              @id @default(uuid())
+  machineId      String
+  versionNumber  Int
+  status         ProbabilityStatus   @default(DRAFT)
+  note           String?
+  createdAt      DateTime            @default(now())
+  publishedAt    DateTime?
+
+  machine        Machine             @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  currentOfMachine Machine[]         @relation("CurrentProbability")
+  rarityWeights  ProbabilityRarity[]
+  rewardPoolItems RewardPoolItem[]
+  spins          Spin[]
+
+  @@unique([machineId, versionNumber])
+}
+
+model ProbabilityRarity {
+  id                    String             @id @default(uuid())
+  probabilityVersionId  String
+  rarity                RewardRarity
+  weight                Int
+
+  probabilityVersion    ProbabilityVersion @relation(fields: [probabilityVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([probabilityVersionId, rarity])
+}
+
+model RewardCatalog {
+  id            String         @id @default(uuid())
+  type          RewardType
+  name          String
+  rarity        RewardRarity
+  stackable     Boolean
+  metadataJson  Json?
+  createdAt     DateTime       @default(now())
+
+  rewardPoolItems RewardPoolItem[]
+  inventory       Inventory[]
+  equips          Equip[]
+  spinResults     Spin[]
+}
+
+model RewardPoolItem {
+  id                    String             @id @default(uuid())
+  probabilityVersionId  String
+  rarity                RewardRarity
+  rewardCatalogId       String
+  weight                Int
+
+  probabilityVersion    ProbabilityVersion @relation(fields: [probabilityVersionId], references: [id], onDelete: Cascade)
+  rewardCatalog         RewardCatalog      @relation(fields: [rewardCatalogId], references: [id])
+
+  @@index([probabilityVersionId, rarity])
+}
+
+model Inventory {
+  id               String        @id @default(uuid())
+  userId           String
+  rewardCatalogId  String
+  qty              Int           @default(1)
+  obtainedAt       DateTime      @default(now())
+  sourceSpinId     String?
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardCatalog    RewardCatalog @relation(fields: [rewardCatalogId], references: [id])
+
+  @@unique([userId, rewardCatalogId])
+  @@index([userId, obtainedAt])
+}
+
+model Spin {
+  id                    String          @id @default(uuid())
+  userId                String
+  machineId             String
+  costPoint             Int
+  usedTicket            Boolean
+  probabilityVersionId  String
+  resultRarity          RewardRarity
+  resultRewardCatalogId String
+  idempotencyKey        String
+  createdAt             DateTime        @default(now())
+
+  user                  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  machine               Machine         @relation(fields: [machineId], references: [id])
+  probabilityVersion    ProbabilityVersion @relation(fields: [probabilityVersionId], references: [id])
+  resultRewardCatalog   RewardCatalog   @relation(fields: [resultRewardCatalogId], references: [id])
+
+  @@unique([userId, idempotencyKey])
+  @@index([machineId, createdAt])
+}
+
+model Equip {
+  id              String        @id @default(uuid())
+  userId          String
+  slotKey         String
+  rewardCatalogId String
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardCatalog   RewardCatalog @relation(fields: [rewardCatalogId], references: [id])
+
+  @@unique([userId, slotKey])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String
+  action      String
+  targetType  String
+  targetId    String
+  diffJson    Json?
+  createdAt   DateTime @default(now())
+
+  actor       User     @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId, createdAt])
+}

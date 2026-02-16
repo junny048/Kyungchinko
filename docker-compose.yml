@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: pachinko
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  api:
+    image: node:22
+    working_dir: /app
+    command: sh -c "npm install && npm run prisma:generate -w apps/api && npm run dev -w apps/api"
+    volumes:
+      - ./:/app
+    env_file:
+      - apps/api/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+
+  web:
+    image: node:22
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -w apps/web"
+    volumes:
+      - ./:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
