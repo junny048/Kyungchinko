@@ -1,6 +1,7 @@
 ﻿import hashlib
 import hmac
 import json
+import mimetypes
 import os
 import re
 import secrets
@@ -16,6 +17,7 @@ DB_PATH = os.getenv("DB_PATH", "app.db")
 ADMIN_KEY = os.getenv("ADMIN_KEY", "dev-admin-key")
 WEBHOOK_TOKEN = os.getenv("WEBHOOK_TOKEN", "dev-webhook-token")
 SPIN_SIGNING_KEY = os.getenv("SPIN_SIGNING_KEY", "dev-spin-signing-key")
+WEB_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "web"))
 
 _rng = SystemRandom()
 _rate_lock = threading.Lock()
@@ -69,6 +71,13 @@ def weighted_choice(rows):
         if target <= acc:
             return row
     return rows[-1]
+
+
+def to_int(value, default=None):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def get_conn() -> sqlite3.Connection:
@@ -347,6 +356,19 @@ class AppHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def write_file(self, file_path: str):
+        if not os.path.isfile(file_path):
+            self.write_json({"error": "Not found"}, HTTPStatus.NOT_FOUND)
+            return
+        with open(file_path, "rb") as f:
+            body = f.read()
+        mime = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", mime)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def require_admin(self) -> bool:
         if self.headers.get("X-Admin-Key", "") != ADMIN_KEY:
             self.write_json({"error": "Admin access required"}, HTTPStatus.UNAUTHORIZED)
@@ -377,6 +399,14 @@ class AppHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         query = parse_qs(parsed.query)
+
+        if path == "/":
+            return self.write_file(os.path.join(WEB_ROOT, "index.html"))
+        if path.startswith("/static/"):
+            rel = path.removeprefix("/static/")
+            if ".." in rel or rel.startswith("/"):
+                return self.write_json({"error": "Bad path"}, HTTPStatus.BAD_REQUEST)
+            return self.write_file(os.path.join(WEB_ROOT, "static", rel))
 
         if path == "/health":
             return self.write_json({"ok": True, "time": now_iso()})
@@ -572,13 +602,13 @@ class AppHandler(BaseHTTPRequestHandler):
         body = self.parse_json_body()
         if body is None:
             return
-        package_id = body.get("packageId")
+        package_id = to_int(body.get("packageId"))
         provider = str(body.get("provider", "mockpay")).strip().lower()
         if package_id is None:
             return self.write_json({"error": "packageId is required"}, HTTPStatus.BAD_REQUEST)
 
         conn = get_conn()
-        pkg = conn.execute("SELECT id, amount_krw, point_granted, bonus_point FROM shop_packages WHERE id = ? AND is_active = 1", (int(package_id),)).fetchone()
+        pkg = conn.execute("SELECT id, amount_krw, point_granted, bonus_point FROM shop_packages WHERE id = ? AND is_active = 1", (package_id,)).fetchone()
         if not pkg:
             conn.close()
             return self.write_json({"error": "Invalid package"}, HTTPStatus.BAD_REQUEST)
@@ -756,18 +786,18 @@ class AppHandler(BaseHTTPRequestHandler):
         if body is None:
             return
         slot = str(body.get("slot", "")).strip().lower()
-        reward_id = body.get("rewardId")
+        reward_id = to_int(body.get("rewardId"))
         if not slot or reward_id is None:
             return self.write_json({"error": "slot and rewardId are required"}, HTTPStatus.BAD_REQUEST)
         conn = get_conn()
-        own = conn.execute("SELECT rc.metadata_json FROM inventory i JOIN reward_catalog rc ON rc.id = i.reward_id WHERE i.user_id = ? AND i.reward_id = ? AND i.qty > 0 LIMIT 1", (uid, int(reward_id))).fetchone()
+        own = conn.execute("SELECT rc.metadata_json FROM inventory i JOIN reward_catalog rc ON rc.id = i.reward_id WHERE i.user_id = ? AND i.reward_id = ? AND i.qty > 0 LIMIT 1", (uid, reward_id)).fetchone()
         if not own: conn.close(); return self.write_json({"error": "Reward not in inventory"}, HTTPStatus.BAD_REQUEST)
         expected = json.loads(own["metadata_json"]).get("slot")
         if expected and expected != slot: conn.close(); return self.write_json({"error": f"Reward slot mismatch. expected={expected}"}, HTTPStatus.BAD_REQUEST)
         ts = now_iso()
-        conn.execute("INSERT INTO equipped_items (user_id, slot, reward_id, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(user_id, slot) DO UPDATE SET reward_id = excluded.reward_id, updated_at = excluded.updated_at", (uid, slot, int(reward_id), ts))
+        conn.execute("INSERT INTO equipped_items (user_id, slot, reward_id, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(user_id, slot) DO UPDATE SET reward_id = excluded.reward_id, updated_at = excluded.updated_at", (uid, slot, reward_id, ts))
         conn.commit(); conn.close()
-        self.write_json({"ok": True, "slot": slot, "rewardId": int(reward_id), "updatedAt": ts})
+        self.write_json({"ok": True, "slot": slot, "rewardId": reward_id, "updatedAt": ts})
 
     def handle_get_history(self, uid: int, query):
         typ = (query.get("type", ["all"])[0] or "all").lower()
@@ -794,12 +824,23 @@ class AppHandler(BaseHTTPRequestHandler):
         if body is None:
             return
         def norm(v):
-            if v is None: return None
-            i = int(v); return i if i > 0 else None
-        daily = norm(body.get("dailyChargeLimit")); weekly = norm(body.get("weeklyChargeLimit")); monthly = norm(body.get("monthlyChargeLimit"))
+            if v is None:
+                return None
+            i = to_int(v)
+            if i is None:
+                raise ValueError("invalid limit")
+            return i if i > 0 else None
+        try:
+            daily = norm(body.get("dailyChargeLimit"))
+            weekly = norm(body.get("weeklyChargeLimit"))
+            monthly = norm(body.get("monthlyChargeLimit"))
+        except ValueError:
+            return self.write_json({"error": "charge limits must be integer or null"}, HTTPStatus.BAD_REQUEST)
         cooldown = body.get("cooldownMinutes"); cooldown_until = None
         if cooldown is not None:
-            c = int(cooldown)
+            c = to_int(cooldown)
+            if c is None:
+                return self.write_json({"error": "cooldownMinutes must be integer"}, HTTPStatus.BAD_REQUEST)
             if c < 0: return self.write_json({"error": "cooldownMinutes must be >= 0"}, HTTPStatus.BAD_REQUEST)
             if c > 0: cooldown_until = (now_dt() + timedelta(minutes=c)).isoformat()
         ts = now_iso(); conn = get_conn()
@@ -809,7 +850,9 @@ class AppHandler(BaseHTTPRequestHandler):
     def handle_set_self_exclusion(self, uid: int):
         body = self.parse_json_body()
         if body is None: return
-        days = int(body.get("days", 0))
+        days = to_int(body.get("days", 0))
+        if days is None:
+            return self.write_json({"error": "days must be integer"}, HTTPStatus.BAD_REQUEST)
         if days <= 0: return self.write_json({"error": "days must be > 0"}, HTTPStatus.BAD_REQUEST)
         until = (now_dt() + timedelta(days=days)).isoformat(); conn = get_conn(); conn.execute("UPDATE users SET self_excluded_until = ? WHERE id = ?", (until, uid)); conn.commit(); conn.close(); self.write_json({"ok": True, "selfExcludedUntil": until})
 

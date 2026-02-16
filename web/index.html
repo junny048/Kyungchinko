@@ -1,0 +1,58 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kyungchinko</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Kyungchinko</h1>
+    <div class="wallet">포인트: <span id="wallet-balance">-</span>P</div>
+  </header>
+
+  <main class="grid">
+    <section class="card auth">
+      <h2>계정</h2>
+      <div class="row">
+        <input id="email" placeholder="email" />
+        <input id="password" type="password" placeholder="password(8+)" />
+      </div>
+      <div class="row">
+        <button id="btn-signup">회원가입</button>
+        <button id="btn-login">로그인</button>
+        <button id="btn-logout">로그아웃</button>
+      </div>
+      <p id="auth-status" class="muted"></p>
+    </section>
+
+    <section class="card shop">
+      <h2>포인트 상점</h2>
+      <div id="packages" class="list"></div>
+    </section>
+
+    <section class="card machines">
+      <h2>머신</h2>
+      <div id="machines" class="list"></div>
+    </section>
+
+    <section class="card result">
+      <h2>최근 스핀 결과</h2>
+      <pre id="spin-result">아직 없음</pre>
+    </section>
+
+    <section class="card inventory">
+      <h2>인벤토리</h2>
+      <div id="inventory" class="list"></div>
+    </section>
+
+    <section class="card logs">
+      <h2>로그</h2>
+      <pre id="logs"></pre>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

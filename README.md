@@ -9,6 +9,7 @@ python app/server.py
 ```
 
 기본 주소: `http://127.0.0.1:8000`
+- UI: `http://127.0.0.1:8000/`
 
 환경 변수:
 - `ADMIN_KEY` (기본값: `dev-admin-key`)
