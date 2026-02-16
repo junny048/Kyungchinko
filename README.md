@@ -1,6 +1,6 @@
 ﻿# Kyungchinko MVP API
 
-`spec.md` 기반 Week 1 범위(Auth/Wallet/Machines/Admin CRUD) 최소 구현입니다.
+`spec.md` 기반 Week 1~4 MVP 백엔드 구현입니다.
 
 ## Run
 
@@ -12,50 +12,55 @@ python app/server.py
 
 환경 변수:
 - `ADMIN_KEY` (기본값: `dev-admin-key`)
+- `WEBHOOK_TOKEN` (기본값: `dev-webhook-token`)
+- `SPIN_SIGNING_KEY` (기본값: `dev-spin-signing-key`)
 - `DB_PATH` (기본값: `app.db`)
 - `HOST` (기본값: `127.0.0.1`)
 - `PORT` (기본값: `8000`)
 
-## Implemented Endpoints
-
-### Health
-- `GET /health`
+## Implemented APIs
 
 ### Auth
 - `POST /api/auth/signup`
 - `POST /api/auth/login`
-- `POST /api/auth/logout` (Bearer token 필요)
+- `POST /api/auth/logout`
 
-### Wallet
-- `GET /api/wallet` (Bearer token 필요)
+### Wallet / Shop / Payments
+- `GET /api/wallet`
+- `GET /api/shop/packages`
+- `POST /api/payments/create-order`
+- `POST /api/payments/webhook/{provider}`
 
-### Machines
+### Machines / Spin
 - `GET /api/machines`
 - `GET /api/machines/{id}`
+- `POST /api/machines/{id}/spin`
+
+### Inventory / Profile
+- `GET /api/inventory?rarity=&type=`
+- `POST /api/inventory/equip`
+- `GET /api/me/history?type=all|payments|spins|rewards`
+
+### Responsible Play
+- `GET /api/me/responsible-limit`
+- `POST /api/me/responsible-limit`
+- `POST /api/me/self-exclusion`
+
+### Events
+- `GET /api/events`
 
 ### Admin
-- `GET /api/admin/users/{id}` (`X-Admin-Key` 필요)
-- `POST /api/admin/machines` (`X-Admin-Key` 필요)
-- `PUT /api/admin/machines/{id}` (`X-Admin-Key` 필요)
-
-## Quick Test (PowerShell)
-
-```powershell
-# 1) 회원가입
-$signup = Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/auth/signup -ContentType 'application/json' -Body '{"email":"test@example.com","password":"password123","ageVerified":true}'
-
-# 2) 로그인
-$login = Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/auth/login -ContentType 'application/json' -Body '{"email":"test@example.com","password":"password123"}'
-$token = $login.token
-
-# 3) 지갑 조회
-Invoke-RestMethod -Method Get -Uri http://127.0.0.1:8000/api/wallet -Headers @{ Authorization = "Bearer $token" }
-
-# 4) 머신 조회
-Invoke-RestMethod -Method Get -Uri http://127.0.0.1:8000/api/machines
-```
+- `GET /api/admin/users/{id}`
+- `POST /api/admin/machines`
+- `PUT /api/admin/machines/{id}`
+- `POST /api/admin/machines/{id}/probability/versions`
+- `PUT /api/admin/probability/versions/{id}/publish`
+- `POST /api/admin/users/{id}/adjust-points`
+- `POST /api/admin/events`
 
 ## Notes
 
-- 포인트 충전/결제, 스핀 트랜잭션, 인벤토리 지급은 다음 단계(Week 2~3) 범위입니다.
-- 이 구현은 MVP 프로토타입용이며, 운영환경에서는 비밀번호 해시 전략/세션/보안 설정을 강화해야 합니다.
+- 스핀은 서버 RNG + 트랜잭션으로 처리되고, `idempotencyKey`를 지원합니다.
+- 결제 웹훅은 `X-Webhook-Token`으로 검증합니다.
+- 경품은 디지털 전용으로 인벤토리에 지급되며, 장착 슬롯을 지원합니다.
+- 레이트리밋(스핀/결제요청)과 책임이용 한도/쿨다운/자가차단(기간)을 포함합니다.
